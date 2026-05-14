@@ -1,0 +1,210 @@
+5주차_flutter
+
+
+<위젯>
+
+- 위젯 : 사용자 인터페이스를 구성하는 기본 단위_(아래의 2가지로 나뉨)
+
+① 레이아웃(Layout Widgets) : 다른 위젯들을 배치하는 역할(=UI의 구조를 만드는 틀)
+ex. container(박스 형태로 스타일 지정), row_, column, stack(위젯을 겹쳐서 배치), ... ...
+
+② 컴퍼런트(Component Widgets) : 사용자와 상호작용하거나 정보를 보여주는 UI 요소
+ex. text, image, radio, ElevatedButton(입체감 있는 버튼), TextButton(텍스트 형태의 버튼), ... ...
+
+
+
+
+< 플러터 아키텍처 >
+
+* Framework (Dart) <- 앱 개발자가 주로 사용
+* Engine (C/C++) <- 렌더링과 코어 기능을 함
+* Embedder (Platform) -> 플랫폼별 구현 O
+
+[ 주요 구성 요소 ]
+
+- 임배더(Embedder) : 각 플랫폼별(운영체제) 네이티브 코드_(플랫폼과 flutter를 연결해주는 다리역할을 함, 화면 렌더링, 이벤트 처리, 접근성 기능 제공)
+
+- 엔진(Engine) : C++로 작성된 핵심 렌더링 엔진_(Skia 그래픽 라이브러리 활용, 파일/네트워크 I/O 및 텍스트 레이아웃 처리, Dart코드를 실행하는 Dart 런타임도 포함)
+(flutter가 자체 렌더링 엔진을 가진 이유임, 주로 애니메이션, 텍스트 렌더링, 레이아웃 계산 등 복잡한 작업 처리함)
+
+- 프레임워크(Framework) : Dart로 작성된 반응형 UI 프레임워크_(Material/Cupertino 등의 라이브러리 포함, 위젯 시스템과 상태 관리)
+
+
+
+
+
+[ 안드로이드 앱 만들 때 화면 단위_2가지 ]
+
+- 액티비티(Activity) : 하나의 화면 전체를 담당하는 단위
+- 프래그먼트(Fragment) : 액티비티 안에 들어가는 작은 화면 조각
+=> 하나의 액티비티 안에서 여러 프래그먼트를 교체하거나 조합해서 유연한 UI를 만들기 가능
+
+
+[ flutter 상의 tree 구조 ]
+
+flutter 상에서는 부모-자식 관계로 연결된 위젯들의 계층 구조로 이우어짐
+=> html의 dom tree처럼 하나의 root 위젯 아래에 여러 위젯들이 중첩되어 있다고 함!!
+
+
+
+
+< 위젯(Widget) 시스템 >
+
+- StatefulWidget : 위젯의 껍데기
+- State : 실제 상태와 로직을 담는 클래스
+※ flutter는 모든 것이 위젯임_(버튼, 패딩, 마진까지 전부 포함)
+
+[ flutter 상에서의 기본 위젯_3가지 ]
+
+① StatelessWidget_(state가 없어 생성 이후 내부데이터 변경X ~> 불변 위젯_(상태 변화X), 주로 정적인 UI구성 요소 만들 떄 사용, 장점 : 성능 최적화, 스레드 안전성, 예측 가능성)
+※ UI를 외부에서 전달된 final 값에 따라 결정 및 변경 시 전제 위젯을 다시 생성해야 함
+ex.
+class MyWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Text('Hello');
+  }
+}
+...
+
+② StatefulWidget_(내부에 상태 가짐 및 setState() 통해 UI 갱신 가능 ~> 가변위젯_(상태 변화O), 주로 동적인 UI구성 요소 만들 시 사용(ex. 사용자 상호작용 동적 UI, 애니메이션))
+※ 사용 시 두 개의 클래스 필요
+ex.
+class MyWidget extends StatefulWidget {
+  @override
+  _MyWidgetState createState() => _MyWidgetState();
+}
+
+class _MyWidgetState extends State<MyWidget> {
+  int counter = 0;
+  
+  void increment() {
+    setState(() {
+      counter++;
+    });
+  }
+}
+...
+
+③ InheritedWidget
+위젯 트리에서 데이터 공유, Provider의 기반 기술, 불필요한 리빌드 방지해줌
+※ 위젯트리 설정 시 상태 변경X
+
+
+
+
+< 라이프사이클_2종류 >
+
+- 라이프사이클(Lifecycle) : 위젯이 생성, 빌드, 제거되는 과정에서 어떤 메서드들을 호출되었는지 알려줌
+
+* StatelessWidget - 상태가 없어 build() 외 특별한 라이프사이클 메서드가 없어서 라이프사이클이 매우 단순한 구조, 상태 변경 시 전체 재생성을 가짐
+ex. Constructor → createElement → build
+
+* StatefulWidget - 상태가 있음, 해당 위젯이 가져야할 상태와 빌드로 구성됨
+※ StatefulWidget이 끝날 떄마다 build 사용해야함!
+ex. Constructor → createState → initState → didChangeDependencies 
+    → build → setState → build (반복) → dispose
+
+[ 라이프사이클 메서드 ]
+
+- constructor : 위젯이 생성될 떄 호출
+- build : UI를 구성하기 위해 갱신/그릴 때 사용
+- initState() :  위젯 생성 시 1번 초기화 작업할 떄 사용함
+- StatefulWidget : 위젯의 껍데기
+- State : 실제 상태와 라이프 사이클 메서드를 포함
+등등 사용함
+
+
+
+
+
+< 레이아웃 위젯 >
+
+
+[ 기본 구조 위젯 ]
+
+Container : 박스 모델로 사용_(padding, margin, decoration ... ..)
+Row, Column : 각각 가로,세로로 배치 시 사용_(mainAxisAlignment, crossAxisAligmnt ... ...)
+Stack : 겹침을 원할 시 사용_(alignment, fit ... ...)
+Positioned : Stack 내에서 위치 지정 시 사용_(left, top, right, bottom ... ...) 
+등등 존재함
+
+[ 공간 활용 위젯 ]
+
+Expanded : Row/Column에서 남은 공간 채우기 용도로 사용함
+SizedBox : 고정 크기 박스 또는 간격 생성 시 사용함
+
+[ 스크롤 가능 위젯 ]
+
+ListView : 수직 혹은 수평으로 나열되어 있는 스크롤 가능한 목록(텍스트, 이미지, 카드 등)들을 보여줄 시 사용
+명령어 ListView.builder 사용 시 성능 좋고, 동적으로 리스트 생성 가능하다고 함
+
+GridView : 격자(grid) 형태로 아이템을 배치하는 스크롤 가능한 위젯(=그리드 레이아웃)
+
+PageView : 페이지 단위로 스크롤되는 뷰르르 구성하는 위젯_(슬라이드 형식의 화면 전환(수평이나 수직방향)을 구현할 때 사용)
+
+
+
+
+< 애니메이션 >
+
+[ 관련 주요 위젯 ]
+
+AnimatedOpacity : 투명도 애니메이션
+AnimatedPositioned : 위치 애니메이션
+AnimatedContainer : 컨테이너 애니메이션
+등등 존재함
+
+{ 공통 옵션 }
+
+duration : 애니메이션 지속 시간
+curve : 애니메이션 곡선
+onEnd : 애니메이션 종료 콜백
+
+
+
+
+< 라우팅 (네비게이션) >
+
+- 라우팅(Routiong) : 한 화면에서 다른 화면으로 이동하는 방식 정의하는 것
+※ flutter에서는 여러 개의 화면을 가질 수 있고, 각 화면은 하나의 widget => navigator 클래스를 통해 화면을 push 혹은 pop을 해 이동을 제어함
+
+- 라우트(route) : 실제로 이동할 대상 화면을 나타내는 객체_(다양한 클래스가 있고, 각각의 스타일 혹은 애니메이션에 따라 선택 가능함
+※ route는 navigator에 의해 관리되고, 스택 구조로 쌓이고 제거됨
+※ 네비게이션은 네비게이터를 이용해 이동함_스택, 큐 규조
+※ main 함수 X => 컴파일 오류 발생함
+
+
+라우트 정의
+ex.
+MaterialApp(
+  initialRoute: '/',
+  routes: {
+    '/': (context) => HomePage(),
+    '/second': (context) => SecondPage(),
+    '/third': (context) => ThirdPage(),
+  },
+)
+
+[ 내비게이션 메서드 ]
+
+pushNamed : 새 페이지 스택에 추가 시 사용_(ex. 일반 페이지 이동)
+pop : 현재 페이지 제거 시 사용_(ex. 뒤로 가기)
+pushReplacementNamed : 현재 페이지 교체 시 사용_(ex. 로그인 후 홈 이동)
+popUntil : 특정 경로까지 제거 시 사용_(ex. 회원가입 완료 후)
+
+Navigator.pushNamed(context, '/second');
+>> 페이지 이동 시 사용
+
+Navigator.pop(context);
+>> 뒤로 가기 시 사용
+
+Navigator.pushReplacementNamed(context, '/home');
+>> 페이지 교체 시 사용
+
+Navigator.popUntil(context, ModalRoute.withName('/'));
+>> 특정 경로까지 돌아갈 시 사용
+
+
+
+------------------------------------------------------------------------
